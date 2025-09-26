@@ -3,12 +3,17 @@
 *.tfstate.backup
 .terraform/
 *.tfvars
-
+crash.log
 
 # SSH keys
-infra\ssh\*.key
+infra/ssh/*.key
 
 # Optional OS files
 .DS_Store
 Thumbs.db
-"@
+
+# Python environment
+venv/
+.venv/
+.env
+env/

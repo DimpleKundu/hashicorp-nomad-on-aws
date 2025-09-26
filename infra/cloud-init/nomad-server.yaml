@@ -1,0 +1,13 @@
+#cloud-config
+packages:
+  - docker.io
+  - unzip
+  - curl
+
+runcmd:
+  - curl -fsSL https://releases.hashicorp.com/nomad/1.10.5/nomad_1.10.5_linux_amd64.zip -o /tmp/nomad.zip
+  - unzip /tmp/nomad.zip -d /usr/local/bin/
+  - mkdir -p /opt/nomad
+  - systemctl enable docker
+  - systemctl start docker
+  - nohup nomad agent -server -bootstrap-expect=1 -data-dir=/opt/nomad -bind=0.0.0.0 -log-level=INFO > /var/log/nomad.log 2>&1 &

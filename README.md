@@ -1,18 +1,16 @@
-# Nomad Cluster Deployment Project
+# 🚀 Nomad Cluster Deployment (AWS)
 
+## Overview
+This project provisions a **Nomad cluster** (1 server + 1 client) on AWS using **Terraform** and runs a sample **hello-world Nomad job**.
 
-This repository contains Terraform code and scripts to deploy a secure, scalable HashiCorp Nomad cluster on Azure.
+## Architecture
+- **VPC** with public subnet
+- **Nomad Server** (EC2, t3.micro)
+- **Nomad Client** (EC2, t3.micro)
+- **Security Group** allows SSH (22), Nomad UI (4646), and HTTP (80)
 
-## Repo Structure
-- infra/environments/dev : Terraform environment for dev
-- infra/modules : reusable Terraform modules
-- infra/ssh : SSH keys (private keys are .gitignored)
-
-## Next Steps
-1. Install Azure CLI and Terraform
-2. Create Azure Service Principal for Terraform
-3. Initialize Terraform backend
-4. Deploy network, VMs, and Nomad agents
-5. Access Nomad UI via SSH tunnel
-6. Deploy sample hello-world Nomad job
-"
+## Deployment Steps
+```bash
+cd infra/environments/dev
+terraform init
+terraform apply
