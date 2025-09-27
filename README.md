@@ -1,4 +1,4 @@
-# Nomad Cluster Deployment (AWS & Local)
+#  Nomad Cluster Deployment (AWS & Local)
 
 ## Overview
 
@@ -135,6 +135,50 @@ It should return: `Hello, Nomad!`
 
 ---
 
+## Observability & Logging
+
+* **Nomad logs**: All server and client logs are written to `/var/log/nomad.log` on each instance.
+
+  ```bash
+  tail -f /var/log/nomad.log
+  ```
+* **Job logs**: View via Nomad UI → Job → Allocations → Logs.
+* **Sample job endpoint**:
+
+  ```bash
+  curl http://<client_ip>:5678
+  ```
+
+  Should return: `Hello, Nomad!`
+
+This ensures **basic observability** of both cluster health and workload.
+
+---
+
+## Automation
+
+* GitHub Actions workflow (`.github/workflows/terraform.yml`) runs on every push to `main`:
+
+  * `terraform init`
+  * `terraform validate`
+  * `terraform plan`
+* This demonstrates **CI/CD-based infrastructure automation**.
+
+---
+
+## Features Implemented
+
+| Feature                | Status | Notes                                                       |
+| ---------------------- | ------ | ----------------------------------------------------------- |
+| Infrastructure as Code | ✅      | Terraform modules for network, server, client               |
+| Cluster Topology       | ✅      | 1 server + 1 client; easily scalable by adding more clients |
+| Secure UI Access       | ✅      | ACL enabled, management token required for UI login         |
+| Workload Deployment    | ✅      | `hello.nomad` job runs containerized HTTP echo app          |
+| Automation             | ✅      | GitHub Actions CI/CD workflow                               |
+| Observability          | ✅      | Nomad logs + job endpoint verification                      |
+
+---
+
 ## Directory Structure
 
 ```
@@ -163,3 +207,29 @@ It should return: `Hello, Nomad!`
 * **UI only accessible via server IP**
 
 ---
+
+## Clean-Up
+
+```bash
+cd infra/environments/dev
+terraform destroy
+```
+
+---
+
+## Notes
+
+* All AWS resources are provisioned **via Terraform**, no manual provisioning required.
+* **Security:** Nomad ACLs enabled; default policy deny.
+* **Observability:** Log files and job endpoints allow you to verify cluster and workload health.
+* **Local testing:** Optional local `server.hcl` and `client.hcl` allow quick iteration before cloud deployment.
+
+---
+
+## Diagram (Cluster Topology)
+
+```
+[Nomad Server] <--RPC--> [Nomad Client] --> hello.nomad job
+       |
+       |-- Nomad UI (HTTP, ACL-secured)
+```
