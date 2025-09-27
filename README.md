@@ -1,13 +1,9 @@
-##Nomad Cluster Deployment (AWS)
+# Nomad Cluster Deployment (AWS & Local)
 
 ## Overview
 
-This project provisions a **HashiCorp Nomad cluster** (1 server + 1 client) on AWS using **Terraform** and runs a simple **hello-world Nomad job**.
-The deployment demonstrates:
-
-* Infrastructure as Code (Terraform)
-* Nomad cluster setup with **ACLs enabled** for secure UI access
-* Running a containerized sample job
+This project provisions a **HashiCorp Nomad cluster** on AWS using **Terraform** and demonstrates a **hello-world Nomad job**.
+It also shows **local Nomad testing** with `server.hcl` and `client.hcl` before cloud deployment.
 
 ---
 
@@ -28,19 +24,18 @@ The deployment demonstrates:
        |                     |
        |                     |-- Runs hello.nomad job
        |
-       |-- Nomad UI (HTTP)
+       |-- Nomad UI (HTTP, ACL-secured)
 ```
 
 ---
 
 ## AWS Credentials
 
-Terraform provisions the EC2 instances automatically using your local AWS CLI credentials.
-**No username/password needed in code**. Make sure AWS CLI is configured:
+Terraform provisions the EC2 instances automatically using your **local AWS CLI credentials**:
 
 ```bash
 aws configure
-# or set environment variables:
+# or environment variables:
 export AWS_ACCESS_KEY_ID=<your_key>
 export AWS_SECRET_ACCESS_KEY=<your_secret>
 export AWS_DEFAULT_REGION=us-east-1
@@ -49,6 +44,44 @@ export AWS_DEFAULT_REGION=us-east-1
 ---
 
 ## Deployment Steps
+
+### Local Testing (Optional)
+
+1. Start Nomad server locally:
+
+```bash
+nomad agent -config=local/server.hcl
+```
+
+2. Start Nomad client locally:
+
+```bash
+nomad agent -config=local/client.hcl
+```
+
+3. Bootstrap ACL for secure UI access:
+
+```bash
+nomad acl bootstrap
+```
+
+This returns a **management token**. Copy it for UI access.
+
+4. Set environment variable for Nomad CLI:
+
+```bash
+export NOMAD_TOKEN=<your_management_token>
+```
+
+5. Access Nomad UI locally:
+
+```
+http://127.0.0.1:4646/ui
+```
+
+---
+
+### Cloud Deployment (AWS)
 
 1. Initialize Terraform environment:
 
@@ -65,35 +98,12 @@ terraform apply
 
 3. Wait for Terraform to complete. It outputs:
 
-```text
+```
 server_ip = <public-ip-of-server>
 client_ip = <public-ip-of-client>
 ```
 
-4. Verify Nomad services:
-
-* **Server** is running with ACL enabled
-* **Client** is registered
-
----
-
-## Secure Nomad UI Access
-
-1. On the server machine (or local if port 4646 is open):
-
-```bash
-nomad acl bootstrap
-```
-
-This outputs the **initial management token**. Copy it.
-
-2. Use this token to access the UI:
-
-```bash
-export NOMAD_TOKEN=<your_management_token>
-```
-
-3. Open Nomad UI in browser:
+4. Access Nomad server on AWS (ACL token required):
 
 ```
 http://<server_ip>:4646/ui
@@ -101,9 +111,9 @@ http://<server_ip>:4646/ui
 
 ---
 
-## Running the Sample Job
+### Running the Sample Job
 
-1. Deploy hello-world job:
+1. Run the hello-world Nomad job:
 
 ```bash
 nomad job run jobs/hello.nomad
@@ -129,14 +139,12 @@ It should return: `Hello, Nomad!`
 
 ```
 .
-├── .github/workflows/terraform.yml   # GitHub Actions CI for Terraform
+├── .github/workflows/terraform.yml   # CI/CD Terraform pipeline
 ├── infra/
-│   ├── cloud-init/                   # EC2 user-data scripts
-│   │   ├── nomad-server.yaml
-│   │   └── nomad-client.yaml
+│   ├── cloud-init/                   # EC2 user-data scripts (install Nomad, Docker)
 │   └── environments/dev/             # Terraform environment
 ├── jobs/
-│   └── hello.nomad                    # Nomad sample job
+│   └── hello.nomad                    # Sample Nomad job
 ├── local/
 │   ├── server.hcl                     # Local server config
 │   └── client.hcl                     # Local client config
@@ -155,10 +163,3 @@ It should return: `Hello, Nomad!`
 * **UI only accessible via server IP**
 
 ---
-
-## Notes
-
-* This setup **does not require SSH access**—all commands can be run locally or on AWS instances using Terraform-provisioned scripts.
-* Docker and Nomad are installed via **cloud-init** automatically.
-
-
