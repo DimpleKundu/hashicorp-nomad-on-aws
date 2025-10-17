@@ -28,3 +28,7 @@ jobs:
 
       - name: Plan
         run: terraform -chdir=infra/environments/dev plan
+
+      - name: Apply
+        run: terraform -chdir=infra/environments/dev apply -auto-approve
+

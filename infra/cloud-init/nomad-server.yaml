@@ -1,18 +1,99 @@
-- |
-  cat <<EOF >/etc/nomad.d/server.hcl
-  server {
-    enabled = true
-    bootstrap_expect = 1
-  }
+#cloud-config
+package_update: true
+package_upgrade: true
 
-  data_dir = "/opt/nomad"
-  bind_addr = "0.0.0.0"
-  log_level = "INFO"
+packages:
+  - docker.io
+  - unzip
+  - curl
 
-  acl {
-    enabled = true
-    token_ttl = "30m"
-    policy_ttl = "30m"
-  }
-  EOF
-- nohup nomad agent -config=/etc/nomad.d > /var/log/nomad.log 2>&1 &
+runcmd:
+  - curl -fsSL https://get.docker.com -o get-docker.sh
+  - sh get-docker.sh
+  - usermod -aG docker ubuntu
+  - systemctl enable --now docker
+
+  # Install Nomad
+  - wget https://releases.hashicorp.com/nomad/1.6.1/nomad_1.6.1_linux_amd64.zip
+  - unzip nomad_1.6.1_linux_amd64.zip
+  - mv nomad /usr/local/bin/
+  - chmod +x /usr/local/bin/nomad
+
+  # Create directories
+  - mkdir -p /etc/nomad.d
+  - mkdir -p /opt/nomad
+
+  # Server config
+  - |
+    cat <<EOF >/etc/nomad.d/nomad.hcl
+    data_dir = "/opt/nomad"
+    bind_addr = "0.0.0.0"
+    datacenter = "dc1"
+    
+    server {
+      enabled = true
+      bootstrap_expect = 1
+      server_join {
+        retry_join = ["provider=aws tag_key=nomad-cluster-id tag_value=${nomad_cluster_id} region=${region}"]
+      }
+    }
+    
+    client {
+      enabled = false
+    }
+    
+    acl {
+      enabled = true
+    }
+    
+    telemetry {
+      publish_allocation_metrics = true
+      publish_node_metrics      = true
+      prometheus_metrics        = true
+    }
+    
+    plugin "docker" {
+      config {
+        allow_privileged = true
+      }
+    }
+    EOF
+
+  # Create systemd service
+  - |
+    cat <<EOF >/etc/systemd/system/nomad.service
+    [Unit]
+    Description=Nomad
+    Documentation=https://www.nomadproject.io/
+    Requires=network-online.target
+    After=network-online.target
+
+    [Service]
+    ExecReload=/bin/kill -HUP $MAINPID
+    ExecStart=/usr/local/bin/nomad agent -config /etc/nomad.d
+    KillMode=process
+    KillSignal=SIGINT
+    LimitNOFILE=65536
+    LimitNPROC=infinity
+    Restart=on-failure
+    RestartSec=2
+    StartLimitBurst=3
+    StartLimitInterval=10s
+    TasksMax=infinity
+    
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+
+  # Set permissions
+  - chown -R ubuntu:ubuntu /opt/nomad
+  - chmod 755 /etc/nomad.d
+  
+  # Enable and start Nomad
+  - systemctl daemon-reload
+  - systemctl enable --now nomad
+  
+  # Verify Nomad is running
+  - sleep 5
+  - systemctl status nomad
+  - journalctl -u nomad -n 50 --no-pager
