@@ -17,3 +17,6 @@ venv/
 .venv/
 .env
 env/
+
+# key
+infra/ssh/nomad-key.pem
