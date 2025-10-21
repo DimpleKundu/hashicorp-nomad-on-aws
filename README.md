@@ -168,8 +168,8 @@ This ensures **basic observability** of both cluster health and workload.
 
 ## Features Implemented
 
-| Feature                | Status | Notes                                                        |
-| ---------------------- | ------ | -----------------------------------------------------------  |
+| Feature                | Status | Notes                                                         |
+| ---------------------- | ------ | -----------------------------------------------------------   |
 | Infrastructure as Code | ✅      | Terraform modules for network, server, client               |
 | Cluster Topology       | ✅      | 1 server + 1 client; easily scalable by adding more clients |
 | Secure UI Access       | ✅      | ACL enabled, management token required for UI login         |
