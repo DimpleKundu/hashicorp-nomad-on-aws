@@ -16,11 +16,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Debug secrets
-        run: |
-          echo "AWS_ACCESS_KEY_ID is${{ secrets.AWS_ACCESS_KEY_ID }}"
-
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
