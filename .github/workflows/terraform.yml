@@ -30,6 +30,7 @@ jobs:
       - name: Plan
         run: terraform -chdir=infra/environments/dev plan
 
-      - name: Apply
-        run: terraform -chdir=infra/environments/dev apply -auto-approve
-
+      # for later: as each successfull workflow on actions created resources fully..
+      # so use s3 to store tfstack file...but now just till plan
+      # - name: Apply
+      #   run: terraform -chdir=infra/environments/dev apply 
