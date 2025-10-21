@@ -17,7 +17,7 @@ jobs:
 
       - name: Debug secrets
         run: |
-          echo "AWS_ACCESS_KEY_ID is $AWS_ACCESS_KEY_ID"
+          echo "AWS_ACCESS_KEY_ID is${{ secrets.AWS_ACCESS_KEY_ID }}"
 
 
       - name: Setup Terraform
