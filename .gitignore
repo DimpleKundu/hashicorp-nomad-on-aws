@@ -7,6 +7,32 @@ crash.log
 
 # SSH keys
 infra/ssh/*.key
+infra/ssh/*.pem
+infra/ssh/*.ppk
+
+# Sensitive data
+*.pem
+*.key
+*.p12
+*.crt
+*.cert
+*.p7b
+*.p7c
+*.pem
+*.pem.*
+*.p8
+*.pkcs8
+*.p12
+*.pfx
+*.pgp
+*.asc
+*.key*
+*_rsa
+*_dsa
+*_ed25519
+*_ecdsa
+*_key
+*_key.pub
 
 # Optional OS files
 .DS_Store
@@ -16,7 +42,10 @@ Thumbs.db
 venv/
 .venv/
 .env
+.env.*
+!.env.example
 env/
 
-# key
-infra/ssh/nomad-key.pem
+# Key files - never commit these!
+infra/ssh/*.pem
+!infra/ssh/example.pem  # Example file that can be committed
